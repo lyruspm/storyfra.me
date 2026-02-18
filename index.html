@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>World Builder</title>
+
+<style>
+/* ===== ROOT THEME ===== */
+:root{
+    --bg-main:#0f1117;
+    --bg-card:#1a1d26;
+    --bg-accent:#232734;
+    --text-main:#e6e9ef;
+    --text-muted:#9aa3b2;
+    --accent:#5aa2ff;
+    --danger:#ff5a7a;
+    --radius:14px;
+}
+
+/* ===== GLOBAL ===== */
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+    font-family:system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+
+body{
+    background:var(--bg-main);
+    color:var(--text-main);
+    padding-bottom:80px;
+}
+
+/* ===== HEADER ===== */
+header{
+    padding:18px;
+    background:var(--bg-card);
+    position:sticky;
+    top:0;
+    z-index:10;
+    border-bottom:1px solid #2a2f3d;
+}
+
+header h1{
+    font-size:20px;
+}
+
+/* ===== SEARCH ===== */
+.search-box{
+    margin-top:12px;
+    display:flex;
+    gap:8px;
+}
+
+.search-box input{
+    flex:1;
+    padding:12px;
+    border-radius:var(--radius);
+    border:none;
+    background:var(--bg-accent);
+    color:var(--text-main);
+}
+
+.search-box input::placeholder{
+    color:var(--text-muted);
+}
+
+/* ===== FOLDER BAR ===== */
+.folder-bar{
+    display:flex;
+    overflow-x:auto;
+    gap:10px;
+    padding:14px;
+}
+
+.folder{
+    background:var(--bg-accent);
+    padding:10px 16px;
+    border-radius:999px;
+    font-size:14px;
+    white-space:nowrap;
+}
+
+/* ===== SECTION ===== */
+.section{
+    padding:16px;
+}
+
+.section h2{
+    margin-bottom:12px;
+    font-size:18px;
+    color:var(--accent);
+}
+
+/* ===== CARD ===== */
+.card{
+    background:var(--bg-card);
+    padding:16px;
+    border-radius:var(--radius);
+    margin-bottom:14px;
+    border:1px solid #2a2f3d;
+}
+
+.card-title{
+    font-weight:600;
+    margin-bottom:6px;
+}
+
+.card-tags{
+    font-size:12px;
+    color:var(--text-muted);
+    margin-top:6px;
+}
+
+/* ===== BOTTOM NAV ===== */
+.bottom-nav{
+    position:fixed;
+    bottom:0;
+    left:0;
+    right:0;
+    height:65px;
+    background:var(--bg-card);
+    border-top:1px solid #2a2f3d;
+    display:flex;
+    justify-content:space-around;
+    align-items:center;
+}
+
+.nav-btn{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    font-size:12px;
+    color:var(--text-muted);
+}
+
+.nav-btn.active{
+    color:var(--accent);
+}
+
+/* ===== MOBILE TOUCH FEEL ===== */
+button{
+    background:none;
+    border:none;
+    color:inherit;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>World Builder</h1>
+
+    <div class="search-box">
+        <input type="text" placeholder="Search or #Hashtag (future feature)">
+    </div>
+</header>
+
+<!-- ===== FOLDER SORT (Placeholder for later logic) ===== -->
+<div class="folder-bar">
+    <div class="folder">All</div>
+    <div class="folder">Main Story</div>
+    <div class="folder">Side Events</div>
+    <div class="folder">Locations</div>
+    <div class="folder">Organizations</div>
+</div>
+
+<!-- ===== EVENTS ===== -->
+<section class="section">
+    <h2>Events</h2>
+
+    <div class="card">
+        <div class="card-title">Blightfall Incident</div>
+        <div class="card-desc">Mass event that reshaped the Digital World.</div>
+        <div class="card-tags">#history #war #major-event</div>
+    </div>
+
+</section>
+
+<!-- ===== CHARACTERS ===== -->
+<section class="section">
+    <h2>Characters</h2>
+
+    <div class="card">
+        <div class="card-title">Example Character</div>
+        <div class="card-desc">Short summary or notes.</div>
+        <div class="card-tags">#protagonist #tamer</div>
+    </div>
+
+</section>
+
+<!-- ===== WORLD ===== -->
+<section class="section">
+    <h2>World</h2>
+
+    <div class="card">
+        <div class="card-title">Example City / HQ</div>
+        <div class="card-desc">City, Town, Base, Organization HQ, etc.</div>
+        <div class="card-tags">#city #location</div>
+    </div>
+
+</section>
+
+<!-- ===== BOTTOM NAV ===== -->
+<nav class="bottom-nav">
+    <a href="index.html" class="nav-btn active">Home</a>
+    <a href="events.html" class="nav-btn">Events</a>
+    <a href="character.html" class="nav-btn">Characters</a>
+    <a href="world.html" class="nav-btn">World</a>
+    <a href="#" class="nav-btn">Folders</a>
+</nav>
+
+</body>
+</html>
