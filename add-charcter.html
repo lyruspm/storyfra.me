@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Add Character</title>
+
+<style>
+:root{
+    --bg-main:#0f1117;
+    --bg-card:#1a1d26;
+    --bg-accent:#232734;
+    --text-main:#e6e9ef;
+    --accent:#5aa2ff;
+    --radius:14px;
+}
+
+body{
+    background:var(--bg-main);
+    color:var(--text-main);
+    font-family:system-ui;
+    padding:20px;
+}
+
+h1{
+    margin-bottom:20px;
+}
+
+input, textarea{
+    width:100%;
+    padding:14px;
+    margin-bottom:16px;
+    border-radius:var(--radius);
+    border:none;
+    background:var(--bg-card);
+    color:white;
+}
+
+button{
+    width:100%;
+    padding:16px;
+    border:none;
+    border-radius:var(--radius);
+    background:var(--accent);
+    color:white;
+    font-size:16px;
+}
+
+/* CANVAS */
+
+canvas{
+    width:200px;
+    height:200px;
+    border-radius:50%;
+    margin-bottom:16px;
+    background:#1a1d26;
+}
+<!-- CANVAS EDITOR -->
+#editorContainer{
+    margin-bottom:20px;
+}
+
+canvas{
+    width:250px;
+    height:250px;
+    border-radius:50%;
+    background:#1a1d26;
+    display:block;
+    margin-bottom:10px;
+}
+
+#zoomSlider{
+    width:100%;
+    margin-bottom:10px;
+}
+
+
+</style>
+</head>
+
+<body>
+
+<h1>Add Character</h1>
+
+<form id="characterForm">
+
+<input id="charName" placeholder="Character Name" required>
+
+<textarea id="charDesc" placeholder="Description"></textarea>
+
+<input id="charTags" placeholder="Tags (#hero #villain #tamer)">
+
+<input id="charFolder" placeholder="Folder (Main Cast / Side / etc)">
+
+
+<label>Character Photo</label>
+<input type="file" id="charImage" accept="image/*">
+
+<div id="editorContainer" style="display:none;">
+    <canvas id="imageCanvas" width="300" height="300"></canvas>
+
+    <input type="range" id="zoomSlider" min="0.5" max="3" step="0.01" value="1">
+
+    <button type="button" id="useImageBtn">Use Image</button>
+</div>
+
+
+<button type="submit">Save Character</button>
+
+</form>
+
+   
+    <script>
+let savedImageData = null;
+
+const fileInput = document.getElementById("charImage");
+const canvas = document.getElementById("imageCanvas");
+const ctx = canvas.getContext("2d");
+
+const zoomSlider = document.getElementById("zoomSlider");
+const editor = document.getElementById("editorContainer");
+const useBtn = document.getElementById("useImageBtn");
+
+let img = new Image();
+let scale = 1;
+let posX = 0;
+let posY = 0;
+let dragging = false;
+let startX = 0;
+let startY = 0;
+
+/* ===== LOAD IMAGE ===== */
+fileInput.addEventListener("change", function(){
+
+    const file = fileInput.files[0];
+    if(!file) return;
+
+    const reader = new FileReader();
+
+    reader.onload = function(e){
+
+        img.onload = function(){
+            editor.style.display = "block";
+
+            scale = 1;
+            posX = 0;
+            posY = 0;
+
+            draw();
+        };
+
+        img.src = e.target.result;
+    };
+
+    reader.readAsDataURL(file);
+});
+
+/* ===== DRAW FUNCTION ===== */
+function draw(){
+
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    ctx.save();
+
+    // Circle mask
+    ctx.beginPath();
+    ctx.arc(150,150,150,0,Math.PI*2);
+    ctx.clip();
+
+    const w = img.width * scale;
+    const h = img.height * scale;
+
+    ctx.drawImage(img, posX, posY, w, h);
+
+    ctx.restore();
+}
+
+/* ===== DRAG IMAGE ===== */
+canvas.addEventListener("mousedown", startDrag);
+canvas.addEventListener("touchstart", startDrag);
+
+function startDrag(e){
+    dragging = true;
+    startX = e.offsetX || e.touches[0].clientX;
+    startY = e.offsetY || e.touches[0].clientY;
+}
+
+canvas.addEventListener("mousemove", dragMove);
+canvas.addEventListener("touchmove", dragMove);
+
+function dragMove(e){
+    if(!dragging) return;
+
+    let x = e.offsetX || e.touches[0].clientX;
+    let y = e.offsetY || e.touches[0].clientY;
+
+    posX += (x - startX);
+    posY += (y - startY);
+
+    startX = x;
+    startY = y;
+
+    draw();
+}
+
+canvas.addEventListener("mouseup", ()=> dragging=false);
+canvas.addEventListener("touchend", ()=> dragging=false);
+
+/* ===== ZOOM ===== */
+zoomSlider.addEventListener("input", function(){
+    scale = parseFloat(this.value);
+    draw();
+});
+
+/* ===== CONFIRM IMAGE ===== */
+useBtn.addEventListener("click", function(){
+
+    savedImageData = canvas.toDataURL("image/png");
+
+    alert("Orientation locked in!");
+});
+</script>
+<script>
+    
+    
+    // SUBMIT SCRIPT
+const form = document.getElementById("characterForm");
+
+form.addEventListener("submit", function(e){
+    e.preventDefault();
+
+  const character = {
+    name: document.getElementById("charName").value.trim(),
+    desc: document.getElementById("charDesc").value.trim(),
+    tags: document.getElementById("charTags").value.trim(),
+    folder: document.getElementById("charFolder").value.trim(),
+    image: savedImageData
+};
+
+    let characters = JSON.parse(localStorage.getItem("characters")) || [];
+
+    characters.push(character);
+
+    localStorage.setItem("characters", JSON.stringify(characters));
+
+    window.location.href = "characters.html";
+});
+</script>
+
+
+
+
+</body>
+</html>
