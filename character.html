@@ -204,6 +204,30 @@ header{
     background:var(--accent);
 }
 
+/* ========== BUTTON STYLING ============= */
+
+.editBtn, .viewBtn{
+    border:none;
+    background:var(--bg-accent);
+    color:var(--text-muted);
+    border-radius:8px;
+    width:36px;
+    height:36px;
+    cursor:pointer;
+    font-size:16px;
+    transition:.15s;
+}
+
+.editBtn:hover{
+    background:var(--accent);
+    color:white;
+}
+
+.viewBtn:hover{
+    background:var(--accent);
+    color:white;
+}
+
 
 </style>
 </head>
@@ -316,17 +340,30 @@ function createCard(char, index){
             <div class="card-tags">${char.tags || ""}</div>
         </div>
 
+        <div style="display:flex; flex-direction:column; gap:8px;">
+            <button class="editBtn" title="Edit">✏</button>
+            <button class="viewBtn" title="View">👁</button>
+        </div>
+
     </div>
     `;
 
-    card.addEventListener("click", () => {
+    // EDIT BUTTON
+    card.querySelector(".editBtn").addEventListener("click", (e)=>{
+        e.stopPropagation();
         localStorage.setItem("editingCharacterIndex", index);
         window.location.href = "character-manager.html";
     });
 
+    // VIEW BUTTON
+    card.querySelector(".viewBtn").addEventListener("click", (e)=>{
+        e.stopPropagation();
+        localStorage.setItem("viewingCharacterIndex", index);
+        window.location.href = "character-viewer.html";
+    });
+
     return card;
 }
-
 
 /* =========================
    RENDER LIST
