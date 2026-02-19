@@ -3,239 +3,342 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Character Manager</title>
+<title>Freeform Profile Editor</title>
 
 <style>
-/* =========================
-   THEME TOKENS
-========================= */
 :root{
-    --bg-main:#0f1117;
-    --bg-card:#1a1d26;
-    --bg-accent:#232734;
-
-    --accent:#5aa2ff;
-    --danger:#ff5a7a;
-
-    --radius:14px;
-
-    --space-xs:6px;
-    --space-sm:10px;
-    --space-md:16px;
-    --space-lg:24px;
-
-    --transition:0.18s ease;
+    --bg-main:#0b0e14;
+    --bg-panel:#121722;
+    --bg-elev:#171d2b;
+    --bg-input:#0f141d;
+    --accent:#6ea8ff;
+    --accent-glow:rgba(110,168,255,0.25);
+    --danger:#ff647c;
+    --success:#7CFC9F;
+    --text-main:#e8ecf4;
+    --text-dim:#8f9bb3;
+    --border:#1f2635;
+    --radius:16px;
+    --radius-sm:12px;
+    --shadow:0 25px 60px rgba(0,0,0,0.55);
 }
 
 /* =========================
    BASE
 ========================= */
+
 *{
     box-sizing:border-box;
 }
 
 body{
-    background:var(--bg-main);
-    color:white;
-    font-family:system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-    padding:var(--space-lg);
-    line-height:1.4;
+    margin:0;
+    padding:40px;
+    background:
+        radial-gradient(circle at 20% 0%, rgba(110,168,255,0.08), transparent 40%),
+        linear-gradient(180deg,#0b0e14 0%, #0e131c 100%);
+    color:var(--text-main);
+    font-family:Inter, system-ui, -apple-system, sans-serif;
+    letter-spacing:0.3px;
+}
+
+h1{
+    margin:0 0 32px 0;
+    font-size:30px;
+    font-weight:700;
+    background:linear-gradient(90deg,#ffffff,#9dbdff);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+}
+
+label{
+    display:block;
+    margin-bottom:10px;
+    font-size:12px;
+    font-weight:600;
+    color:var(--text-dim);
+    text-transform:uppercase;
+    letter-spacing:1.5px;
 }
 
 /* =========================
-   CARD LAYOUT (Optional)
+   LAYOUT WRAPPER
 ========================= */
-.card{
-    background:var(--bg-card);
+
+.editor{
+    position:relative;
+    margin-bottom:28px;
     border-radius:var(--radius);
-    padding:var(--space-lg);
+    background:var(--bg-panel);
+    border:1px solid var(--border);
+    box-shadow:var(--shadow);
+    overflow:hidden;
+    transition:all 0.25s ease;
 }
 
-/* =========================
-   INPUTS / TEXTAREAS / SELECT
-========================= */
-input,
-textarea,
-select{
-    width:100%;
-    padding:14px;
-    margin-bottom:var(--space-md);
-    border-radius:var(--radius);
-    border:none;
-    background:var(--bg-card);
-    color:white;
-    font-size:14px;
 
-    transition:var(--transition);
+/* =========================
+   EDITOR LAYERS
+========================= */
+
+.editor textarea,
+.editor .highlight{
+    position:absolute;
+    inset:0;
+    transform: translateZ(0);
+    color:#ffffff;
+
+    padding:20px;
+
+    font-family:Consolas, Monaco, monospace;
+    font-size:13px;
+    line-height:20px;
+
+    letter-spacing:0;
+    font-kerning:none;
+    font-variant-ligatures:none;
+
+    tab-size:4;
+
+    white-space:pre;
+    overflow:hidden;
+
+    box-sizing:border-box;
+}
+
+/* highlight layer */
+.editor .highlight{
+    background:var(--bg-input);
+    color:#ffffff;
+    pointer-events:none;
+    z-index:1;
+
+    overflow:hidden;
+    
+    display:block;
+}
+
+/* textarea typing layer */
+.editor textarea{
+    background:transparent;
+    color:#ffffff;
+    caret-color:var(--accent);
+    resize:none;
     outline:none;
+    z-index:2;
+
+    overflow:hidden;
+    
+    display:block;
 }
 
-/* Focus glow */
-input:focus,
-textarea:focus,
-select:focus{
-    background:var(--bg-accent);
-    box-shadow:0 0 0 2px var(--accent);
-}
-
-/* Textarea usability */
-textarea{
-    resize:vertical;
-    min-height:120px;
-}
-
-/* Select reset */
-select{
-    appearance:none;
-    cursor:pointer;
+/* focus glow */
+.editor:focus-within{
+    border-color:var(--accent);
+    box-shadow:
+        0 0 0 1px var(--accent),
+        0 0 30px var(--accent-glow),
+        var(--shadow);
 }
 
 /* =========================
-   BUTTON SYSTEM
+   SCROLLBARS
 ========================= */
+
+.editor textarea::-webkit-scrollbar,
+.editor .highlight::-webkit-scrollbar{
+    width:10px;
+    height:10px;
+}
+
+.editor textarea::-webkit-scrollbar-thumb,
+.editor .highlight::-webkit-scrollbar-thumb{
+    background:#263047;
+    border-radius:10px;
+}
+
+.editor textarea::-webkit-scrollbar-thumb:hover,
+.editor .highlight::-webkit-scrollbar-thumb:hover{
+    background:#324060;
+}
+
+/* =========================
+   BUTTONS
+========================= */
+
 button{
     width:100%;
-    padding:16px;
-    border:none;
+    padding:15px;
     border-radius:var(--radius);
-    margin-bottom:12px;
-    font-size:16px;
     font-weight:600;
+    font-size:14px;
     cursor:pointer;
-
-    transition:var(--transition);
+    border:none;
+    transition:all 0.25s ease;
+    margin-bottom:16px;
 }
 
-/* Variants */
-.btn-primary{
-    background:var(--accent);
+#saveBtn{
+    background:linear-gradient(135deg,#5aa2ff,#7db5ff);
+    color:white;
+    box-shadow:0 10px 30px rgba(90,162,255,0.35);
 }
 
-.btn-danger{
-    background:var(--danger);
+#saveBtn:hover{
+    transform:translateY(-3px);
+    box-shadow:0 15px 40px rgba(90,162,255,0.45);
 }
 
-/* Hover / Active */
-button:hover{
-    transform:translateY(-1px);
-    filter:brightness(1.05);
+.secondary{
+    background:var(--bg-elev);
+    color:var(--text-main);
+    border:1px solid var(--border);
 }
 
-button:active{
-    transform:translateY(0);
-    filter:brightness(.95);
-}
-
-/* =========================
-   AVATAR PREVIEW
-========================= */
-.avatarPreview{
-    width:140px;
-    height:140px;
-    border-radius:50%;
-    object-fit:cover;
-    background:var(--bg-accent);
-    display:block;
-    margin:0 auto var(--space-md) auto;
+.secondary:hover{
+    background:#1e2638;
+    transform:translateY(-2px);
 }
 
 /* =========================
-   CANVAS EDITOR
+   ERROR PANEL
 ========================= */
-#editorContainer{
+
+#errorPanel{
+    padding:14px 16px;
+    border-radius:var(--radius-sm);
+    font-size:13px;
+    margin-bottom:22px;
+    background:var(--bg-elev);
+    border:1px solid var(--border);
+    transition:all 0.2s ease;
+}
+
+#errorPanel:empty{
     display:none;
-    margin-bottom:var(--space-lg);
-}
-
-canvas{
-    width:260px;
-    height:260px;
-    border-radius:50%;
-    display:block;
-    margin:0 auto var(--space-sm) auto;
-    background:#000;
-}
-
-#zoomSlider{
-    width:100%;
-    margin-bottom:var(--space-sm);
 }
 
 /* =========================
-   UTILITY HELPERS
+   SYNTAX COLORS
 ========================= */
-.center{
-    display:flex;
+
+.token-tag{ color:#6ea8ff; }
+.token-bracket{ color:#ff8bd6; }
+.token-attr{ color:#ffd166; }
+.token-string{ color:#7CFC9F; }
+.token-template{ color:#ffb86c; }
+
+/* =========================
+   PREVIEW OVERLAY
+========================= */
+
+.preview-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(5,8,14,0.85);
+    backdrop-filter:blur(8px);
+    display:none;
     justify-content:center;
     align-items:center;
+    padding:40px;
+    z-index:999;
 }
 
-.stack > * + *{
-    margin-top:var(--space-md);
+.preview-box{
+    width:100%;
+    max-width:1100px;
+    height:90%;
+    background:var(--bg-panel);
+    border-radius:var(--radius);
+    border:1px solid var(--border);
+    box-shadow:0 40px 80px rgba(0,0,0,0.7);
+    position:relative;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
 }
 
-.hidden{
-    display:none !important;
+.close-btn{
+    position:absolute;
+    top:18px;
+    alignment:center;
+    right:18px;
+    background:var(--danger);
+    color:white;
+    border:none;
+    padding:8px 16px;
+    border-radius:var(--radius-sm);
+    font-size:12px;
+    font-weight:600;
+    cursor:pointer;
+    transition:all 0.2s ease;
+
+}
+
+.close-btn:hover{
+    transform:translateY(-2px);
+    box-shadow:0 8px 20px rgba(255,100,124,0.35);
+}
+
+#previewRoot{
+    flex:1;
+    overflow:hidden;
+    padding:32px;
 }
 
 /* =========================
-   MOBILE TWEAKS
+   RESPONSIVE
 ========================= */
-@media (max-width:480px){
+
+@media (max-width:900px){
     body{
-        padding:var(--space-md);
+        padding:24px;
     }
 
-    canvas{
-        width:220px;
-        height:220px;
+    .editor{
+        height:240px;
     }
 
-    .avatarPreview{
-        width:120px;
-        height:120px;
+    .preview-box{
+        height:95%;
     }
 }
 
-/* Base button */
-.btn{
-    width:100%;
-    padding:16px;
-    border:none;
-    border-radius:var(--radius);
-    font-size:16px;
+/*===============COLLAPSIBLE SECTION=================*/
+
+.section{
+    margin-bottom:30px;
+}
+
+.section-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:14px 18px;
+    background:var(--bg-elev);
+    border-radius:var(--radius-sm);
+    font-size:13px;
     font-weight:600;
+    letter-spacing:1px;
     cursor:pointer;
-    transition:0.18s ease;
+    user-select:none;
+    border:1px solid var(--border);
 }
 
-/* SAVE */
-.saveBtn{
-    background:var(--accent);
-    color:white;
+.section-header:hover{
+    background:#1e2638;
 }
 
-.saveBtn:hover{
-    filter:brightness(1.1);
+.section-body{
+    margin-top:12px;
 }
 
-.saveBtn:active{
-    filter:brightness(.9);
+.section.collapsed .section-body{
+    display:none;
 }
 
-
-/* DELETE */
-.deleteBtn{
-    background:var(--danger);
-    color:white;
-}
-
-.deleteBtn:hover{
-    filter:brightness(1.1);
-}
-
-.deleteBtn:active{
-    filter:brightness(.9);
+.toggle{
+    font-size:16px;
 }
 
 
@@ -244,556 +347,403 @@ canvas{
 
 <body>
 
-<!-- HTML START -->
+<h1>Freeform Profile Editor</h1>
 
-<h1>Edit Character</h1>
-
-<img id="avatarPreview" class="avatarPreview">
-
-<input type="file" id="charImage" accept="image/*">
-
-<div id="editorContainer">
-    <canvas id="imageCanvas" width="300" height="300"></canvas>
-    <input type="range" id="zoomSlider" min="0.5" max="3" step="0.01" value="1">
-    <button type="button" id="useImageBtn">Use Image</button>
+<div class="section">
+    <div class="section-header" data-target="htmlSection">
+        HTML Layout
+        <span class="toggle">−</span>
+    </div>
+    <div class="section-body" id="htmlSection">
+        <div class="editor">
+            <pre class="highlight" id="htmlHighlight"></pre>
+            <textarea id="htmlInput" spellcheck="false"></textarea>
+        </div>
+    </div>
 </div>
 
-<button type="button" id="freeformBtn" class="btn hidden">
-    Freeform Edit
-</button>
-
-<input id="charName" placeholder="Name">
-<textarea id="charDesc" placeholder="Description"></textarea>
-<input id="charTags" placeholder="Tags">
-<input id="charFolder" placeholder="Folder">
-
-<h2 style="margin-top:20px;">Life Timeline</h2>
-
-<input type="date" id="charBirthDate" placeholder="Birth Date">
-<input type="date" id="charDeathDate" placeholder="Death Date">
-
-
-<div id="autoStats" style="
-background:var(--bg-card);
-padding:14px;
-border-radius:var(--radius);
-margin-bottom:16px;
-font-size:14px;
-color:#9aa3b2;
-">
+<div class="section">
+    <div class="section-header" data-target="cssSection">
+        CSS Styling
+        <span class="toggle">−</span>
+    </div>
+    <div class="section-body" id="cssSection">
+        <div class="editor">
+            <pre class="highlight" id="cssHighlight"></pre>
+            <textarea id="cssInput" spellcheck="false"></textarea>
+        </div>
+    </div>
 </div>
 
+<div id="errorPanel"></div>
 
-<h2 style="margin-top:20px;">Custom Fields</h2>
+<button id="saveBtn">Save Profile</button>
+<button class="secondary" id="previewBtn">Preview</button>
 
-<div id="customFieldsList"></div>
-
-<button type="button" id="addCustomFieldBtn">
-+ Add Custom Field
-</button>
-
-
-<h2 style="margin-top:20px;">Lore Metadata</h2>
-
-<input id="charSpecies" placeholder="Species">
-<input id="charFaction" placeholder="Faction">
-<input id="charOrigin" placeholder="Origin World / Location">
-
-<select id="charAlignment">
-    <option value="">Alignment</option>
-    <option>Hero</option>
-    <option>Neutral</option>
-    <option>Villain</option>
-    <option>Anti-Hero</option>
-    <option>Anti-Villain</option>
-</select>
-
-
-<div class="form-section">
-    <h3>Abilities</h3>
-
-    <div id="abilityList"></div>
-
-    <button type="button" id="addAbilityBtn">+ Add Ability</button>
+<div class="preview-overlay" id="previewOverlay">
+    <div class="preview-box">
+        <button class="close-btn" id="closePreview">Close</button>
+        <div id="previewRoot"></div>
+    </div>
 </div>
-
-
-
-<h2 style="margin-top:20px;">Relationships</h2>
-
-<div id="relationshipList"></div>
-
-<button type="button" id="addRelationshipBtn">
-+ Add Relationship
-</button>
-
-<button class="saveBtn" id="saveBtn">Save Changes</button>
-<button class="btn deleteBtn" id="deleteCharacterBtn">
-    Delete Character
-</button>
-
-
-
-
-
-
-
-<!-- HTML END -->
-
-
-
-
-<!-- JAVA SCRIPT -->
 
 <script>
 
-/* =============================
-   STATE LOAD
-============================= */
+/* =========================
+   LOAD CHARACTER
+========================= */
 let characters = JSON.parse(localStorage.getItem("characters")) || [];
 let editingId = localStorage.getItem("editingCharacterId");
-let char = characters.find(c => c.id === editingId) || null;
+let char = characters.find(c => c.id === editingId);
 
-let savedImageData = char?.image || null;
+if(!char){
+    alert("No character selected.");
+    window.location.href = "character.html";
+}
 
-let relationships = char?.relationships || [];
-let customFields = char?.customFields || [];
-let abilities = char?.abilities || [];
+if(!char.freeform){
+    char.freeform = { html:"", css:"" };
+}
 
+const htmlInput = document.getElementById("htmlInput");
+const cssInput = document.getElementById("cssInput");
+const htmlHighlight = document.getElementById("htmlHighlight");
+const cssHighlight = document.getElementById("cssHighlight");
+const errorPanel = document.getElementById("errorPanel");
 
-/* =============================
-   ELEMENTS
-============================= */
-const avatarPreview = document.getElementById("avatarPreview");
-const fileInput = document.getElementById("charImage");
-const editor = document.getElementById("editorContainer");
-const canvas = document.getElementById("imageCanvas");
-const ctx = canvas.getContext("2d");
-const zoomSlider = document.getElementById("zoomSlider");
-const useBtn = document.getElementById("useImageBtn");
-
-const birthInput = document.getElementById("charBirthDate");
-const deathInput = document.getElementById("charDeathDate");
-const autoStats = document.getElementById("autoStats");
-
-const speciesInput = document.getElementById("charSpecies");
-const factionInput = document.getElementById("charFaction");
-const originInput = document.getElementById("charOrigin");
-const alignmentInput = document.getElementById("charAlignment");
-
-const relationshipList = document.getElementById("relationshipList");
-const addRelationshipBtn = document.getElementById("addRelationshipBtn");
-
-const customFieldsList = document.getElementById("customFieldsList");
-const addCustomFieldBtn = document.getElementById("addCustomFieldBtn");
-
-const deleteBtn = document.getElementById("deleteCharacterBtn");
-const saveBtn = document.getElementById("saveBtn");
-
-const abilityList = document.getElementById("abilityList");
-const addAbilityBtn = document.getElementById("addAbilityBtn");
+htmlInput.value = char.freeform.html || "";
+cssInput.value = char.freeform.css || "";
 
 
-/* =============================
-   LOAD FORM DATA
-============================= */
-if(char){
-    charName.value = char.name || "";
-    charDesc.value = char.desc || "";
-    charTags.value = char.tags || "";
-    charFolder.value = char.folder || "";
+/* =========================
+   SAVE
+========================= */
+document.getElementById("saveBtn").addEventListener("click", ()=>{
+    char.freeform.html = htmlInput.value;
+    char.freeform.css = cssInput.value;
+    char.updatedAt = new Date().toISOString();
+    localStorage.setItem("characters", JSON.stringify(characters));
+    alert("Freeform profile saved.");
+});
 
-    birthInput.value = char.birthDate || "";
-    deathInput.value = char.deathDate || "";
 
-    speciesInput.value = char.species || "";
-    factionInput.value = char.faction || "";
-    originInput.value = char.origin || "";
-    alignmentInput.value = char.alignment || "";
+/* =========================
+   HARD SANITIZER
+========================= */
+function sanitizeHTML(input){
 
-    if(char.image){
-        avatarPreview.src = 
-     document.getElementById("freeformBtn").classList.remove("hidden");   
-    }
+    if(!input) return "";
+
+    // Remove script blocks
+    input = input.replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, "");
+
+    // Remove dangerous container tags
+    input = input.replace(/<(iframe|object|embed|svg|math|link|meta|base|form|input|button|textarea)[\s\S]*?>[\s\S]*?<\/\1>/gi, "");
+    input = input.replace(/<(iframe|object|embed|svg|math|link|meta|base|form|input|button|textarea)[^>]*?>/gi, "");
+
+    // Remove inline event handlers (onload, onclick, etc)
+    input = input.replace(/\son\w+\s*=\s*(".*?"|'.*?'|[^\s>]+)/gi, "");
+
+    // Remove javascript: and data:
+    input = input.replace(/javascript:/gi, "");
+    input = input.replace(/data:text\/html/gi, "");
+
+    return input;
 }
 
 
-/* =============================
-   IMAGE EDITOR
-============================= */
-let img = new Image();
-let scale = 1;
-let posX = 0;
-let posY = 0;
-let dragging = false;
-let startX = 0;
-let startY = 0;
+/* =========================
+   CSS SANITIZER
+========================= */
+function sanitizeCSS(input){
 
-fileInput.addEventListener("change", () => {
-    const file = fileInput.files[0];
-    if(!file) return;
+    if(!input) return "";
 
-    const reader = new FileReader();
+    // Remove @import
+    input = input.replace(/@import[^;]+;/gi, "");
 
-    reader.onload = e => {
-        img.onload = () => {
-            editor.style.display = "block";
+    // Remove expression()
+    input = input.replace(/expression\s*\([^)]*\)/gi, "");
 
-            scale = Math.max(
-                canvas.width / img.width,
-                canvas.height / img.height
-            );
+    // Remove javascript URLs
+    input = input.replace(/url\(\s*javascript:[^)]+\)/gi, "");
 
-            posX = (canvas.width - img.width * scale)/2;
-            posY = (canvas.height - img.height * scale)/2;
+    // Remove behavior:
+    input = input.replace(/behavior\s*:/gi, "");
 
-            draw();
-        };
+    return input;
+}
 
-        img.src = e.target.result;
+
+/* =========================
+   TEMPLATE VARIABLES
+========================= */
+function applyTemplate(html){
+    const replacements = {
+        "{{name}}": char.name || "",
+        "{{desc}}": char.desc || "",
+        "{{tags}}": char.tags || "",
+        "{{folder}}": char.folder || "",
+        "{{image}}": char.image || ""
     };
 
-    reader.readAsDataURL(file);
-});
+    Object.keys(replacements).forEach(key=>{
+        html = html.split(key).join(replacements[key]);
+    });
 
-function draw(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(150,150,150,0,Math.PI*2);
-    ctx.clip();
-
-    ctx.drawImage(img, posX, posY, img.width*scale, img.height*scale);
-    ctx.restore();
+    return html;
 }
 
-function clampPosition(){
-    const imgW = img.width * scale;
-    const imgH = img.height * scale;
 
-    const minX = canvas.width - imgW;
-    const minY = canvas.height - imgH;
+/* =========================
+   SECURE PREVIEW (SANDBOXED IFRAME - FIX)
+========================= */
 
-    posX = Math.min(0, Math.max(minX, posX));
-    posY = Math.min(0, Math.max(minY, posY));
-}
+const previewBtn = document.getElementById("previewBtn");
+const previewOverlay = document.getElementById("previewOverlay");
+const previewRoot = document.getElementById("previewRoot");
+const closePreview = document.getElementById("closePreview");
 
-function startDrag(e){
-    dragging = true;
-    const rect = canvas.getBoundingClientRect();
+previewBtn.addEventListener("click", ()=>{
 
-    startX = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
-    startY = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
-}
+    let safeHTML = sanitizeHTML(htmlInput.value);
+    safeHTML = applyTemplate(safeHTML);
+    const safeCSS = sanitizeCSS(cssInput.value);
 
-function dragMove(e){
-    if(!dragging) return;
+    previewRoot.innerHTML = "";
+    previewOverlay.style.display = "none";
+    previewRoot.innerHTML = "";
 
-    const rect = canvas.getBoundingClientRect();
-    const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
-    const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+    const iframe = document.createElement("iframe");
 
-    posX += x - startX;
-    posY += y - startY;
+    iframe.style.width = "100%";
+    iframe.style.height = "100%";
+    iframe.style.border = "none";
+    
 
-    startX = x;
-    startY = y;
+    // Scripts disabled
+    iframe.setAttribute("sandbox", "");
 
-    clampPosition();
-    draw();
-}
-
-canvas.addEventListener("mousedown", startDrag);
-canvas.addEventListener("mousemove", dragMove);
-canvas.addEventListener("mouseup", ()=> dragging=false);
-
-canvas.addEventListener("touchstart", startDrag);
-canvas.addEventListener("touchmove", dragMove, { passive:false });
-canvas.addEventListener("touchend", ()=> dragging=false);
-
-zoomSlider.addEventListener("input", ()=>{
-    scale = parseFloat(zoomSlider.value);
-    draw();
-});
-
-useBtn.addEventListener("click", ()=>{
-    savedImageData = canvas.toDataURL("image/png");
-    avatarPreview.src = savedImageData;
-    editor.style.display = "none";
-});
-
-
-/* =============================
-   AUTO STATS
-============================= */
-function updateAutoStats(){
-    const birth = birthInput.value ? new Date(birthInput.value) : null;
-    const death = deathInput.value ? new Date(deathInput.value) : null;
-
-    let status = death ? "Deceased" : "Alive";
-    let age = "Unknown";
-
-    if(birth){
-        const end = death || new Date();
-        age = Math.floor((end-birth)/(1000*60*60*24*365.25));
-    }
-
-    autoStats.innerHTML = `Status: <b>${status}</b><br>Age: <b>${age}</b>`;
-    return {status, age};
-}
-
-birthInput.addEventListener("input", updateAutoStats);
-deathInput.addEventListener("input", updateAutoStats);
-updateAutoStats();
-
-
-/* =============================
-   SAVE CHARACTER
-============================= */
-saveBtn.addEventListener("click", ()=>{
-
-    const auto = updateAutoStats();
-
-    if(char){
-        characters = characters.map(c =>
-            c.id === editingId
-                ? {
-                    ...c,
-                    name: charName.value,
-                    desc: charDesc.value,
-                    tags: charTags.value,
-                    folder: charFolder.value,
-                    image: savedImageData,
-                    birthDate: birthInput.value || null,
-                    deathDate: deathInput.value || null,
-                    status: auto.status,
-                    age: auto.age,
-                    species: speciesInput.value,
-                    faction: factionInput.value,
-                    origin: originInput.value,
-                    alignment: alignmentInput.value,
-                    relationships,
-                    customFields,
-                    abilities,
-                    updatedAt: new Date().toISOString()
+    iframe.srcdoc = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta http-equiv="Content-Security-Policy"
+                  content="default-src 'none'; style-src 'unsafe-inline'; img-src https: data:;">
+            <style>
+                body {
+                    background:#161a23;
+                    color:#ffffff;
+                    font-family:Inter, system-ui, sans-serif;
+                    padding:24px;
                 }
-                : c
-        );
+                ${safeCSS}
+            </style>
+        </head>
+        <body>
+            ${safeHTML}
+        </body>
+        </html>
+    `;
+
+    previewRoot.appendChild(iframe);
+
+    previewOverlay.style.display = "flex";
+});
+/* =========================
+   ESCAPE
+========================= */
+function escapeHTML(str){
+    return str.replace(/&/g,"&amp;")
+              .replace(/</g,"&lt;")
+              .replace(/>/g,"&gt;");
+}
+
+
+/* =========================
+   SYNTAX HIGHLIGHTING
+========================= */
+
+function highlightHTML(code){
+    code = escapeHTML(code);
+
+    code = code.replace(/(\{\{.*?\}\})/g,
+        '<span class="token-template">$1</span>');
+
+    code = code.replace(/(&lt;|&gt;)/g,
+        '<span class="token-bracket">$1</span>');
+
+    code = code.replace(/(&lt;\/?[a-zA-Z0-9-]+)/g,
+        '<span class="token-tag">$1</span>');
+
+    code = code.replace(/([a-zA-Z-:]+)=/g,
+        '<span class="token-attr">$1</span>=');
+
+    code = code.replace(/(".*?"|\'.*?\')/g,
+        '<span class="token-string">$1</span>');
+
+    return code;
+}
+
+function highlightCSS(code){
+    code = escapeHTML(code);
+
+    code = code.replace(/(^|\n)([^\{\}\n]+)(?=\s*\{)/g,
+        '$1<span class="token-tag">$2</span>');
+
+    code = code.replace(/([a-zA-Z-]+)(?=\s*:)/g,
+        '<span class="token-attr">$1</span>');
+
+    code = code.replace(/:\s*([^;]+)/g,
+        ': <span class="token-string">$1</span>');
+
+    return code;
+}
+
+
+/* =========================
+   ERROR DETECTION
+========================= */
+
+function detectErrors(html, css){
+
+    let errors = [];
+
+    const voidTags = ["br","hr","img","input","meta","link","area","base","col","embed","param","source","track","wbr"];
+
+    const tagStack = [];
+    const tagRegex = /<\/?([a-zA-Z0-9-]+)[^>]*>/g;
+    let match;
+
+    while((match = tagRegex.exec(html)) !== null){
+        const fullTag = match[0];
+        const tagName = match[1].toLowerCase();
+
+        if(voidTags.includes(tagName)) continue;
+
+        if(fullTag.startsWith("</")){
+            if(tagStack[tagStack.length - 1] === tagName){
+                tagStack.pop();
+            } else {
+                errors.push(`Unexpected closing tag: </${tagName}>`);
+            }
+        } else if(!fullTag.endsWith("/>")){
+            tagStack.push(tagName);
+        }
+    }
+
+    if(tagStack.length > 0){
+        errors.push(`Unclosed tag: <${tagStack[tagStack.length - 1]}>`);
+    }
+
+    let openBraces = (css.match(/{/g) || []).length;
+    let closeBraces = (css.match(/}/g) || []).length;
+
+    if(openBraces !== closeBraces){
+        errors.push("Unmatched { } in CSS.");
+    }
+
+    if(/<script/i.test(html)){
+        errors.push("Script tags are not allowed.");
+    }
+
+    if(/javascript:/i.test(html)){
+        errors.push("javascript: URLs are not allowed.");
+    }
+
+    return errors;
+}
+
+
+/* =========================
+   LIVE UPDATE
+========================= */
+function updateEditors(){
+
+    const htmlCode = htmlInput.value;
+    const cssCode = cssInput.value;
+
+    // Preserve final newline to prevent vertical drift
+    const htmlSafe = htmlCode.endsWith("\n") ? htmlCode + " " : htmlCode;
+    const cssSafe = cssCode.endsWith("\n") ? cssCode + " " : cssCode;
+
+    htmlHighlight.innerHTML = highlightHTML(htmlSafe);
+    cssHighlight.innerHTML = highlightCSS(cssSafe);
+
+    const errors = detectErrors(htmlCode, cssCode);
+
+    if(errors.length > 0){
+        errorPanel.style.color = "#ff5a7a";
+        errorPanel.innerHTML = errors.join("<br>");
     } else {
-        characters.push({
-            id: crypto.randomUUID(),
-            name: charName.value,
-            desc: charDesc.value,
-            tags: charTags.value,
-            folder: charFolder.value,
-            image: savedImageData,
-            birthDate: birthInput.value || null,
-            deathDate: deathInput.value || null,
-            status: auto.status,
-            age: auto.age,
-            species: speciesInput.value,
-            faction: factionInput.value,
-            origin: originInput.value,
-            alignment: alignmentInput.value,
-            relationships,
-            customFields,
-            abilities,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-        });
+        errorPanel.style.color = "#7CFC9F";
+        errorPanel.innerHTML = "✓ No syntax errors detected.";
     }
-
-    localStorage.setItem("characters", JSON.stringify(characters));
-    window.location.href = "character.html";
-});
-
-
-/* =============================
-   DELETE CHARACTER
-============================= */
-deleteBtn.addEventListener("click", ()=>{
-
-    if(!char){
-        alert("Cannot delete — no character loaded.");
-        return;
-    }
-
-    if(!confirm("Delete this character permanently?")) return;
-
-    characters = characters.filter(c => c.id !== editingId);
-    localStorage.setItem("characters", JSON.stringify(characters));
-    localStorage.removeItem("editingCharacterId");
-
-    window.location.href = "character.html";
-});
-
-
-/* =============================
-   RELATIONSHIPS
-============================= */
-addRelationshipBtn.addEventListener("click", ()=>{
-    relationships.push({name:"", type:""});
-    renderRelationships();
-});
-
-function renderRelationships(){
-    relationshipList.innerHTML = "";
-
-    relationships.forEach((rel,i)=>{
-        const row = document.createElement("div");
-
-        row.innerHTML = `
-        <input value="${rel.name||""}" data-i="${i}" class="rel-name">
-        <input value="${rel.type||""}" data-i="${i}" class="rel-type">
-        <button data-i="${i}" class="rel-del">Delete</button>
-        `;
-
-        relationshipList.appendChild(row);
-    });
-
-    document.querySelectorAll(".rel-name").forEach(el=>{
-        el.oninput = e => relationships[e.target.dataset.i].name = e.target.value;
-    });
-
-    document.querySelectorAll(".rel-type").forEach(el=>{
-        el.oninput = e => relationships[e.target.dataset.i].type = e.target.value;
-    });
-
-    document.querySelectorAll(".rel-del").forEach(el=>{
-        el.onclick = e=>{
-            relationships.splice(e.target.dataset.i,1);
-            renderRelationships();
-        };
-    });
 }
 
-renderRelationships();
+/* =========================
+   AUTO EXPAND
+========================= */
 
-/*===========FREEFORM EDIT==============*/
+function autoResize(textarea, highlight){
+    const editor = textarea.parentElement;
 
-const freeformBtn = document.getElementById("freeformBtn");
+    textarea.style.height = "auto";
+    highlight.style.height = "auto";
+    editor.style.height = "auto";
 
-freeformBtn.addEventListener("click", ()=>{
+    const newHeight = textarea.scrollHeight + "px";
 
-    if(!char){
-        alert("You must save the character before using Freeform Edit.");
-        return;
+    textarea.style.height = newHeight;
+    highlight.style.height = newHeight;
+    editor.style.height = newHeight;
+}
+\
+
+bindAutoResize(htmlInput, htmlHighlight);
+bindAutoResize(cssInput, cssHighlight);
+
+/* =========================
+   COLLAPSE SECTIONS
+========================= */
+
+document.querySelectorAll(".section-header").forEach(header=>{
+    header.addEventListener("click", ()=>{
+        const section = header.parentElement;
+        const toggle = header.querySelector(".toggle");
+
+        section.classList.toggle("collapsed");
+
+        toggle.textContent =
+            section.classList.contains("collapsed") ? "+" : "−";
+    });
+});
+
+// Close button
+closePreview.addEventListener("click", closeOverlay);
+
+// Click outside preview box
+previewOverlay.addEventListener("click", (e) => {
+    if (e.target === previewOverlay) {
+        closeOverlay();
     }
-
-    localStorage.setItem("editingCharacterId", char.id);
-
-    window.location.href = "freeform-editor.html";
 });
 
-
-
-/* =============================
-   CUSTOM FIELDS
-============================= */
-addCustomFieldBtn.addEventListener("click", ()=>{
-    customFields.push({
-        id: crypto.randomUUID(),
-        label:"",
-        type:"text",
-        value:"",
-        options:[]
-    });
-    renderCustomFields();
+// ESC key
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && previewOverlay.style.display === "flex") {
+        closeOverlay();
+    }
 });
 
-function renderCustomFields(){
-    customFieldsList.innerHTML = "";
-
-    customFields.forEach((f,i)=>{
-        const div = document.createElement("div");
-
-        div.innerHTML = `
-        <input value="${f.label}" data-i="${i}" class="cf-label">
-        <select data-i="${i}" class="cf-type">
-            <option value="text">Text</option>
-            <option value="longtext">Long Text</option>
-            <option value="number">Number</option>
-            <option value="boolean">True/False</option>
-        </select>
-        <button data-i="${i}" class="cf-del">Delete</button>
-        `;
-
-        customFieldsList.appendChild(div);
-    });
-
-    document.querySelectorAll(".cf-label").forEach(el=>{
-        el.oninput = e => customFields[e.target.dataset.i].label = e.target.value;
-    });
-
-    document.querySelectorAll(".cf-type").forEach(el=>{
-        el.onchange = e => customFields[e.target.dataset.i].type = e.target.value;
-    });
-
-    document.querySelectorAll(".cf-del").forEach(el=>{
-        el.onclick = e=>{
-            customFields.splice(e.target.dataset.i,1);
-            renderCustomFields();
-        };
-    });
+function closeOverlay() {
+    previewOverlay.style.display = "none";
+    previewRoot.innerHTML = "";
 }
 
-renderCustomFields();
-
-
-/* =============================
-   ABILITIES
-============================= */
-addAbilityBtn.addEventListener("click", ()=>{
-    abilities.push({
-        id: crypto.randomUUID(),
-        name:"",
-        type:"",
-        power:0,
-        description:""
-    });
-    renderAbilities();
-});
-
-function renderAbilities(){
-    abilityList.innerHTML = "";
-
-    abilities.forEach(a=>{
-        const div = document.createElement("div");
-
-        div.innerHTML = `
-        <input value="${a.name}" data-id="${a.id}" class="ab-name">
-        <input value="${a.type}" data-id="${a.id}" class="ab-type">
-        <input type="number" value="${a.power}" data-id="${a.id}" class="ab-power">
-        <textarea data-id="${a.id}" class="ab-desc">${a.description}</textarea>
-        <button data-id="${a.id}" class="ab-del">Delete</button>
-        `;
-
-        abilityList.appendChild(div);
-    });
-}
-
-abilityList.addEventListener("input", e=>{
-    const id = e.target.dataset.id;
-    const a = abilities.find(x=>x.id===id);
-    if(!a) return;
-
-    if(e.target.classList.contains("ab-name")) a.name = e.target.value;
-    if(e.target.classList.contains("ab-type")) a.type = e.target.value;
-    if(e.target.classList.contains("ab-power")) a.power = parseInt(e.target.value)||0;
-    if(e.target.classList.contains("ab-desc")) a.description = e.target.value;
-});
-
-abilityList.addEventListener("click", e=>{
-    if(!e.target.classList.contains("ab-del")) return;
-    const id = e.target.dataset.id;
-    abilities = abilities.filter(a=>a.id!==id);
-    renderAbilities();
-});
-
-renderAbilities();
 
 </script>
+
 
 </body>
 </html>
