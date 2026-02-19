@@ -169,7 +169,7 @@ header{
 .card-content{
     display:flex;
     gap:16px;
-    align-items:flex-start;
+    align-items:center;
 }
 
 .card-text{
@@ -255,6 +255,90 @@ header{
 .copy-id-btn:hover{
     background:var(--accent);
     color:white;
+}
+
+/* ===== RADIAL MENU ===== */
+
+.radial-container{
+    position:relative;
+    width:40px;
+    height:40px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.radial-main{
+    width:40px;
+    height:40px;
+    border-radius:50%;
+    border:none;
+    background:var(--bg-accent);
+    color:var(--text-muted);
+    cursor:pointer;
+    font-size:18px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition:.2s;
+    z-index:2;
+}
+
+.radial-main:hover{
+    background:var(--accent);
+    color:white;
+}
+
+.radial-menu{
+    position:absolute;
+    width:40px;
+    height:40px;
+    top:50%;
+    left:50%;
+    transform:translate(-50%, -50%);
+    pointer-events:none;
+}
+
+.radial-item{
+    position:absolute;
+    width:36px;
+    height:36px;
+    border-radius:50%;
+    border:none;
+    background:var(--bg-card);
+    color:var(--text-muted);
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition:.25s ease;
+    opacity:0;
+    transform:translate(0,0);
+}
+
+.radial-item:hover{
+    background:var(--accent);
+    color:white;
+}
+
+.radial-container.active .radial-menu{
+    pointer-events:auto;
+}
+
+/* Even spacing around center */
+.radial-container.active .edit{
+    transform:translate(-60px, 0);
+    opacity:1;
+}
+
+.radial-container.active .view{
+    transform:translate(0, -60px);
+    opacity:1;
+}
+
+.radial-container.active .freeform{
+    transform:translate(-45px, -45px);
+    opacity:1;
 }
 
 
@@ -391,12 +475,16 @@ function createCard(char){
                 <div class="card-tags">${char.tags || ""}</div>
             </div>
 
-            <div style="display:flex; flex-direction:column; gap:8px;">
-                <button class="editBtn" title="Edit">✏</button>
-                <button class="viewBtn" title="View">▶</button>
-            </div>
+          <div class="radial-container">
+    <button class="radial-main">•••</button>
 
-        </div>
+    <div class="radial-menu">
+        <button class="radial-item edit" title="Edit">✒</button>
+        <button class="radial-item view" title="View">✦</button>
+        <button class="radial-item freeform" title="Freeform">▶</button>
+    </div>
+</div>
+</div>
     `;
 
     card.querySelector(".copy-id-btn").addEventListener("click", async (e)=>{
@@ -412,17 +500,35 @@ function createCard(char){
         }
     });
 
-    card.querySelector(".editBtn").addEventListener("click", (e)=>{
-        e.stopPropagation();
-        localStorage.setItem("editingCharacterId", char.id);
-        window.location.href = "character-manager.html";
-    });
+    const radialContainer = card.querySelector(".radial-container");
+const mainBtn = card.querySelector(".radial-main");
 
-    card.querySelector(".viewBtn").addEventListener("click", (e)=>{
-        e.stopPropagation();
-        localStorage.setItem("viewingCharacterId", char.id);
-        window.location.href = "character-viewer.html";
-    });
+mainBtn.addEventListener("click", (e)=>{
+    e.stopPropagation();
+    radialContainer.classList.toggle("active");
+});
+
+/* EDIT */
+card.querySelector(".edit").addEventListener("click", (e)=>{
+    e.stopPropagation();
+    localStorage.setItem("editingCharacterId", char.id);
+    window.location.href = "character-manager.html";
+});
+
+/* VIEW */
+card.querySelector(".view").addEventListener("click", (e)=>{
+    e.stopPropagation();
+    localStorage.setItem("viewingCharacterId", char.id);
+    window.location.href = "character-viewer.html";
+});
+
+/* FREEFORM */
+card.querySelector(".freeform").addEventListener("click", (e)=>{
+    e.stopPropagation();
+    localStorage.setItem("freeformCharacterId", char.id);
+    window.location.href = "freeform-editor.html";
+});
+
 
     return card;
 }
@@ -576,6 +682,11 @@ function init(){
 }
 
 init();
+
+document.addEventListener("click", ()=>{
+    document.querySelectorAll(".radial-container.active")
+        .forEach(el => el.classList.remove("active"));
+});
 
 
 </script>
