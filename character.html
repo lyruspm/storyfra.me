@@ -315,13 +315,29 @@ let activeFolder = "All";
 ========================= */
 function loadCharacters(){
     characters = JSON.parse(localStorage.getItem("characters")) || [];
+
+    // Auto-assign IDs if missing
+    let changed = false;
+
+    characters = characters.map(c => {
+        if(!c.id){
+            changed = true;
+            return { ...c, id: crypto.randomUUID() };
+        }
+        return c;
+    });
+
+    if(changed){
+        localStorage.setItem("characters", JSON.stringify(characters));
+    }
 }
+
 
 
 /* =========================
    CARD CREATOR
 ========================= */
-function createCard(char, index){
+function createCard(char){
 
     const card = document.createElement("div");
     card.className = "card";
@@ -342,7 +358,7 @@ function createCard(char, index){
 
         <div style="display:flex; flex-direction:column; gap:8px;">
             <button class="editBtn" title="Edit">✏</button>
-            <button class="viewBtn" title="View">👁</button>
+            <button class="viewBtn" title="View">▶</button>
         </div>
 
     </div>
@@ -351,14 +367,14 @@ function createCard(char, index){
     // EDIT BUTTON
     card.querySelector(".editBtn").addEventListener("click", (e)=>{
         e.stopPropagation();
-        localStorage.setItem("editingCharacterIndex", index);
+        localStorage.setItem("editingCharacterId", char.id);
         window.location.href = "character-manager.html";
     });
 
     // VIEW BUTTON
     card.querySelector(".viewBtn").addEventListener("click", (e)=>{
         e.stopPropagation();
-        localStorage.setItem("viewingCharacterIndex", index);
+        localStorage.setItem("viewingCharacterId", char.id);
         window.location.href = "character-viewer.html";
     });
 
@@ -378,18 +394,10 @@ function renderList(array){
     }
 
     array.forEach(char => {
-
-        // safer index lookup
-        const originalIndex = characters.findIndex(c =>
-            c.name === char.name &&
-            c.desc === char.desc &&
-            c.tags === char.tags &&
-            c.image === char.image
-        );
-
-        list.appendChild(createCard(char, originalIndex));
+        list.appendChild(createCard(char));
     });
 }
+
 
 
 /* =========================
