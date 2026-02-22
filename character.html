@@ -122,9 +122,9 @@
     }
 
     .card-content {
-      display: flex;
+      display: flex;      
       gap: 16px;
-      align-items: center;
+      align-items: c 64px;      
     }
 
     .avatar {
@@ -184,8 +184,7 @@
       color: white;
     }
 
-    /* ── Radial Menu (now automatic!) ── */
-/* ── Radial Menu (left-side fan / half-circle) ── */
+    /* ── Radial Menu (now automa/* ── Radial Menu (left-side fan / half-circle) ── */
 :root {
   --radial-distance: 74px;     /* distance from center – feel free to tweak */
   --fan-start: 100deg;         /* start angle (from positive x-axis) – 90deg = straight up */
@@ -197,6 +196,7 @@
   width: 44px;
   height: 44px;
   flex-shrink: 0;
+  z-index: 10;
 }
 
 .radial-main {
@@ -283,7 +283,7 @@
 .radial-item:nth-child(3) { --i: 3; }
 .radial-item:nth-child(4) { --i: 4; }
 .radial-item:nth-child(5) { --i: 5; }
-.radial-item:nth-child(6) { --i: 6; }
+.radial-item:nth-child(6) { --i: 6; } { --i: 6; }
     /* ── Bottom Nav ── */
     .bottom-nav {
       position: fixed;
@@ -326,7 +326,8 @@
       text-decoration: none;
       box-shadow: 0 6px 20px rgba(0,0,0,0.45);
       transition: all 0.3s ease;
-      z-index: 1100;
+      z-index: 2200;
+      will-change: transform;
     }
 
     .fab:active {
@@ -351,6 +352,9 @@
     <h2>Character List</h2>
     <div id="characterList"></div>
   </section>
+  
+  <nav class="bottom-nav">...</nav>
+  <a href="add-character.html" class="fab" id="fabBtn">+</a>
 
   <!-- Bottom Navigation -->
   <nav class="bottom-nav">
@@ -418,7 +422,7 @@
           </div>
 
           <div class="radial-container">
-            <button class="radial-main" type="button">•••</button>
+            <button class="radial-main" type="button">•••</button>          
 
             <div class="radial-menu">
               <button class="radial-item edit"    title="Edit"         type="button">✒</button>
