@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Freeform Viewer</title>
+
+<style>
+:root{
+    --bg-main:#0b0e14;
+    --bg-panel:#121722;
+    --bg-elev:#171d2b;
+    --accent:#6ea8ff;
+    --danger:#ff647c;
+    --text-main:#e8ecf4;
+    --text-dim:#8f9bb3;
+    --border:#1f2635;
+    --radius:18px;
+    --shadow:0 30px 70px rgba(0,0,0,0.65);
+}
+
+*{ box-sizing:border-box; }
+
+body{
+    margin:0;
+    background:
+        radial-gradient(circle at 20% 0%, rgba(110,168,255,0.08), transparent 40%),
+        linear-gradient(180deg,#0b0e14 0%, #0e131c 100%);
+    color:var(--text-main);
+    font-family:Inter, system-ui, -apple-system, sans-serif;
+    padding:40px;
+}
+
+/* HEADER */
+
+.viewer-header{
+    margin-bottom:28px;
+}
+
+.viewer-title{
+    font-size:28px;
+    font-weight:700;
+    background:linear-gradient(90deg,#ffffff,#9dbdff);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+}
+
+.viewer-sub{
+    color:var(--text-dim);
+    font-size:13px;
+    margin-top:6px;
+}
+
+/* PANEL */
+
+.viewer-container{
+    background:var(--bg-panel);
+    border-radius:var(--radius);
+    border:1px solid var(--border);
+    box-shadow:var(--shadow);
+    overflow:hidden;
+    position:relative;
+    min-height:400px;
+}
+
+/* IFRAME */
+
+.viewer-frame{
+    width:100%;
+    height:80vh;
+    border:none;
+    display:block;
+}
+
+/* ERROR STATE */
+
+.error-box{
+    padding:30px;
+    text-align:center;
+    color:var(--danger);
+}
+
+.error-box h2{
+    margin-bottom:12px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="viewer-header">
+    <div class="viewer-title" id="viewerTitle">Loading...</div>
+    <div class="viewer-sub" id="viewerMeta"></div>
+</div>
+
+<div class="viewer-container" id="viewerContainer">
+    <div class="error-box hidden" id="errorBox">
+        <h2>Unable to load character</h2>
+        <div id="errorMessage"></div>
+    </div>
+</div>
+
+<script>
+
+/* =============================
+   GET CHARACTER ID
+============================= */
+
+function getCharacterId(){
+    const params = new URLSearchParams(window.location.search);
+    const queryId = params.get("id");
+
+    if(queryId) return queryId;
+
+    return localStorage.getItem("editingCharacterId");
+}
+
+const characterId = getCharacterId();
+
+/* =============================
+   LOAD DATA
+============================= */
+
+let characters = JSON.parse(localStorage.getItem("characters")) || [];
+let char = characters.find(c => c.id === characterId);
+
+/* =============================
+   ERROR HANDLING
+============================= */
+
+const errorBox = document.getElementById("errorBox");
+const errorMessage = document.getElementById("errorMessage");
+const viewerContainer = document.getElementById("viewerContainer");
+const viewerTitle = document.getElementById("viewerTitle");
+const viewerMeta = document.getElementById("viewerMeta");
+
+function showError(msg){
+    viewerContainer.innerHTML = "";
+    errorBox.classList.remove("hidden");
+    errorMessage.textContent = msg;
+    viewerContainer.appendChild(errorBox);
+}
+
+if(!characterId){
+    showError("No character ID provided.");
+    throw new Error("Missing character ID.");
+}
+
+if(!char){
+    showError("Character not found in local storage.");
+    throw new Error("Character not found.");
+}
+
+/* =============================
+   SANITIZERS
+============================= */
+
+function sanitizeHTML(input){
+
+    if(!input) return "";
+
+    input = input.replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, "");
+    input = input.replace(/<(iframe|object|embed|svg|math|link|meta|base|form|input|button|textarea)[\s\S]*?>[\s\S]*?<\/\1>/gi, "");
+    input = input.replace(/<(iframe|object|embed|svg|math|link|meta|base|form|input|button|textarea)[^>]*?>/gi, "");
+    input = input.replace(/\son\w+\s*=\s*(".*?"|'.*?'|[^\s>]+)/gi, "");
+    input = input.replace(/javascript:/gi, "");
+    input = input.replace(/data:text\/html/gi, "");
+
+    return input;
+}
+
+function sanitizeCSS(input){
+
+    if(!input) return "";
+
+    input = input.replace(/@import[^;]+;/gi, "");
+    input = input.replace(/expression\s*\([^)]*\)/gi, "");
+    input = input.replace(/url\(\s*javascript:[^)]+\)/gi, "");
+    input = input.replace(/behavior\s*:/gi, "");
+
+    return input;
+}
+
+/* =============================
+   TEMPLATE VARIABLES
+============================= */
+
+function applyTemplate(html){
+
+    const replacements = {
+        "{{name}}": char.name || "",
+        "{{desc}}": char.desc || "",
+        "{{tags}}": char.tags || "",
+        "{{folder}}": char.folder || "",
+        "{{image}}": char.image || ""
+    };
+
+    Object.keys(replacements).forEach(key=>{
+        html = html.split(key).join(replacements[key]);
+    });
+
+    return html;
+}
+
+/* =============================
+   FALLBACK STRUCTURED VIEW
+============================= */
+
+function buildFallbackHTML(){
+
+    return `
+        <div style="max-width:800px;margin:0 auto;">
+            ${char.image ? `<img src="${char.image}" style="width:180px;height:180px;border-radius:50%;object-fit:cover;margin-bottom:20px;">` : ""}
+            <h1>${char.name || "Unnamed Character"}</h1>
+            <p>${char.desc || ""}</p>
+            <hr>
+            <p><b>Species:</b> ${char.species || "Unknown"}</p>
+            <p><b>Faction:</b> ${char.faction || "Unknown"}</p>
+            <p><b>Alignment:</b> ${char.alignment || "Unspecified"}</p>
+            <p><b>Status:</b> ${char.status || "Unknown"}</p>
+            <p><b>Age:</b> ${char.age || "Unknown"}</p>
+        </div>
+    `;
+}
+
+/* =============================
+   RENDER
+============================= */
+
+viewerTitle.textContent = char.name || "Unnamed Character";
+viewerMeta.textContent = `Last updated: ${char.updatedAt ? new Date(char.updatedAt).toLocaleString() : "Unknown"}`;
+
+let safeHTML = char.freeform?.html
+    ? sanitizeHTML(applyTemplate(char.freeform.html))
+    : buildFallbackHTML();
+
+let safeCSS = char.freeform?.css
+    ? sanitizeCSS(char.freeform.css)
+    : "";
+
+/* Create iframe */
+
+const iframe = document.createElement("iframe");
+iframe.className = "viewer-frame";
+iframe.setAttribute("sandbox", "");
+
+iframe.srcdoc = `
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Security-Policy"
+content="
+default-src 'none';
+style-src 'unsafe-inline';
+img-src https: data:;
+font-src https:;
+media-src https:;
+">
+<style>
+body{
+    background:#161a23;
+    color:white;
+    font-family:Inter, system-ui, sans-serif;
+    padding:30px;
+}
+${safeCSS}
+</style>
+</head>
+<body>
+${safeHTML}
+</body>
+</html>
+`;
+
+viewerContainer.appendChild(iframe);
+
+</script>
+
+</body>
+</html>
