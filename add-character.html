@@ -110,7 +110,11 @@ canvas{
 </form>
 
    
-    <script>
+<script>
+
+/* =============================
+   STATE
+============================= */
 let savedImageData = null;
 
 const fileInput = document.getElementById("charImage");
@@ -121,6 +125,12 @@ const zoomSlider = document.getElementById("zoomSlider");
 const editor = document.getElementById("editorContainer");
 const useBtn = document.getElementById("useImageBtn");
 
+const form = document.getElementById("characterForm");
+
+
+/* =============================
+   IMAGE EDITOR
+============================= */
 let img = new Image();
 let scale = 1;
 let posX = 0;
@@ -129,22 +139,30 @@ let dragging = false;
 let startX = 0;
 let startY = 0;
 
-/* ===== LOAD IMAGE ===== */
-fileInput.addEventListener("change", function(){
+
+/* LOAD IMAGE */
+fileInput.addEventListener("change", ()=>{
 
     const file = fileInput.files[0];
     if(!file) return;
 
     const reader = new FileReader();
 
-    reader.onload = function(e){
+    reader.onload = e => {
 
-        img.onload = function(){
+        img.onload = ()=>{
+
             editor.style.display = "block";
 
-            scale = 1;
-            posX = 0;
-            posY = 0;
+            scale = Math.max(
+                canvas.width / img.width,
+                canvas.height / img.height
+            );
+
+            posX = (canvas.width - img.width * scale)/2;
+            posY = (canvas.height - img.height * scale)/2;
+
+            zoomSlider.value = scale;
 
             draw();
         };
@@ -155,47 +173,45 @@ fileInput.addEventListener("change", function(){
     reader.readAsDataURL(file);
 });
 
-/* ===== DRAW FUNCTION ===== */
+
+/* DRAW */
 function draw(){
 
     ctx.clearRect(0,0,canvas.width,canvas.height);
 
     ctx.save();
-
-    // Circle mask
     ctx.beginPath();
     ctx.arc(150,150,150,0,Math.PI*2);
     ctx.clip();
 
-    const w = img.width * scale;
-    const h = img.height * scale;
-
-    ctx.drawImage(img, posX, posY, w, h);
+    ctx.drawImage(img, posX, posY, img.width*scale, img.height*scale);
 
     ctx.restore();
 }
 
-/* ===== DRAG IMAGE ===== */
-canvas.addEventListener("mousedown", startDrag);
-canvas.addEventListener("touchstart", startDrag);
 
+/* DRAG */
 function startDrag(e){
+
     dragging = true;
-    startX = e.offsetX || e.touches[0].clientX;
-    startY = e.offsetY || e.touches[0].clientY;
+
+    const rect = canvas.getBoundingClientRect();
+
+    startX = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+    startY = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
 }
 
-canvas.addEventListener("mousemove", dragMove);
-canvas.addEventListener("touchmove", dragMove);
-
 function dragMove(e){
+
     if(!dragging) return;
 
-    let x = e.offsetX || e.touches[0].clientX;
-    let y = e.offsetY || e.touches[0].clientY;
+    const rect = canvas.getBoundingClientRect();
 
-    posX += (x - startX);
-    posY += (y - startY);
+    const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+    const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+
+    posX += x - startX;
+    posY += y - startY;
 
     startX = x;
     startY = y;
@@ -203,49 +219,75 @@ function dragMove(e){
     draw();
 }
 
+canvas.addEventListener("mousedown", startDrag);
+canvas.addEventListener("mousemove", dragMove);
 canvas.addEventListener("mouseup", ()=> dragging=false);
+
+canvas.addEventListener("touchstart", startDrag);
+canvas.addEventListener("touchmove", dragMove, { passive:false });
 canvas.addEventListener("touchend", ()=> dragging=false);
 
-/* ===== ZOOM ===== */
-zoomSlider.addEventListener("input", function(){
-    scale = parseFloat(this.value);
+
+/* ZOOM */
+zoomSlider.addEventListener("input", ()=>{
+    scale = parseFloat(zoomSlider.value);
     draw();
 });
 
-/* ===== CONFIRM IMAGE ===== */
-useBtn.addEventListener("click", function(){
 
+/* CONFIRM IMAGE */
+useBtn.addEventListener("click", ()=>{
     savedImageData = canvas.toDataURL("image/png");
-
-    alert("Orientation locked in!");
+    alert("Image locked in!");
 });
-    
-    // SUBMIT SCRIPT
-const form = document.getElementById("characterForm");
 
-form.addEventListener("submit", function(e){
+
+/* =============================
+   FORM SUBMIT
+============================= */
+form.addEventListener("submit", e => {
+
     e.preventDefault();
 
-  const character = {
-    name: document.getElementById("charName").value.trim(),
-    desc: document.getElementById("charDesc").value.trim(),
-    tags: document.getElementById("charTags").value.trim(),
-    folder: document.getElementById("charFolder").value.trim(),
-    image: savedImageData
-};
+    const characters = JSON.parse(localStorage.getItem("characters")) || [];
 
-    let characters = JSON.parse(localStorage.getItem("characters")) || [];
+    const newChar = {
 
-    characters.push(character);
+        id: crypto.randomUUID(),
+
+        name: charName.value.trim(),
+        desc: charDesc.value.trim(),
+        tags: charTags.value.trim(),
+        folder: charFolder.value.trim(),
+
+        image: savedImageData,
+
+        birthDate: null,
+        deathDate: null,
+
+        status: "Alive",
+        age: "Unknown",
+
+        species: "",
+        faction: "",
+        origin: "",
+        alignment: "",
+
+        relationships: [],
+        customFields: [],
+        abilities: [],
+
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+    };
+
+    characters.push(newChar);
 
     localStorage.setItem("characters", JSON.stringify(characters));
 
     window.location.href = "character.html";
 });
+
 </script>
-
-
-
-
 </body>
 </html>
